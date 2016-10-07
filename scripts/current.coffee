@@ -3,10 +3,10 @@
 #
 # Commands:
 #   hubot env current - Displays all current environment variables
-#   hubot env current --prefix=[prefix] - Displays current environment variables with prefix
+#   hubot env current -prefix=[prefix] - Displays current environment variables with prefix
 
 module.exports = (robot) ->
-  robot.respond /env current($| --prefix=)(.*)$/i, (msg) ->
+  robot.respond /env current($| -prefix=)(.*)$/i, (msg) ->
     prefix = msg.match[2].trim()
 
     hidden_words = process.env.HUBOT_ENV_HIDDEN_WORDS

@@ -2,8 +2,8 @@
 #   Loads file of environment variables in process.env and redis
 #
 # Commands:
-#   hubot env load --filename=[filename] --dry-run - Try loading [filename] of environment variables in process.env and redis
-#   hubot env load --filename=[filename] - Loads [filename] of environment variables in process.env and redis
+#   hubot env load -filename=[filename] -dry-run - Try loading [filename] of environment variables in process.env and redis
+#   hubot env load -filename=[filename] - Loads [filename] of environment variables in process.env and redis
 
 fs   = require 'fs'
 path = require 'path'
@@ -13,9 +13,9 @@ _    = require 'underscore'
 brain_key = "hubot-env"
 
 getArgParams = (arg) ->
-    dry_run = if arg.match(/--dry-run/) then true else false
+    dry_run = if arg.match(/-dry-run/) then true else false
 
-    filename_capture = /--filename=(.*?)( |$)/.exec(arg)
+    filename_capture = /-filename=(.*?)( |$)/.exec(arg)
     filename = if filename_capture then filename_capture[1] else null
 
     return { dry_run : dry_run, filename: filename }
@@ -68,10 +68,15 @@ showDetailBeforeApply = (msg, file_path) ->
 
 module.exports = (robot) ->
   robot.respond /env load(.*)$/i, (msg) ->
+    #msg.send "test: " + /-filename=(.*)/.exec(msg.match[1])
+    #weo = if msg.match[1].match(/-filename/) then true else false
+    #msg.send "weo: "+ weo
     arg_params = getArgParams(msg.match[1])
-
+    #msg.send "Args: " + msg.match[1]
     dry_run    = arg_params.dry_run
+    #msg.send "dry_run is: " + dry_run
     filename   = arg_params.filename
+    #msg.send "Filename is: " + filename
     unless filename
       msg.send "Error: Empty filename is invalid"
       return
@@ -82,7 +87,67 @@ module.exports = (robot) ->
       msg.send "Error: Not Found #{file_path}"
       return
 
-    msg.send "Loading env --filename=#{filename}, --dry-run=#{dry_run}..."
+    msg.send "Loading env -filename=#{filename}, -dry-run=#{dry_run}..."
+
+    if dry_run
+      showDetailBeforeApply msg, file_path
+      msg.send "Complete dry-run"
+      return
+
+    prev_process_env = _.clone process.env
+
+    env file_path, {overwrite: true}
+
+    showLoadedEnv msg, prev_process_env
+
+    saveInBrain robot, prev_process_env
+  
+  robot.hear /switch region (.*)/i, (msg) ->
+    msg.send "Switching Region Master..."
+    region = msg.match[1]
+    dry_run    = false
+    filename   = region + ".env"
+    unless filename
+      msg.send "Error: Empty filename is invalid"
+      return
+
+    base_path = process.env.HUBOT_ENV_BASE_PATH || ''
+    file_path = path.resolve base_path, filename
+    unless fs.existsSync file_path
+      msg.send "Error: Not Found #{file_path}"
+      return
+
+    msg.send "Loading env -filename=#{filename}, -dry-run=#{dry_run}..."
+
+    if dry_run
+      showDetailBeforeApply msg, file_path
+      msg.send "Complete dry-run"
+      return
+
+    prev_process_env = _.clone process.env
+
+    env file_path, {overwrite: true}
+
+    showLoadedEnv msg, prev_process_env
+
+    saveInBrain robot, prev_process_env
+
+  robot.hear /switch account (.*)/i, (msg) ->
+    msg.send "Switching Region Master..."
+    region = msg.match[1]
+    dry_run    = false
+    filename   = region + ".env"
+    unless filename
+      msg.send "Error: Empty filename is invalid"
+      return
+
+    base_path = process.env.HUBOT_ENV_BASE_PATH || ''
+    file_path = path.resolve base_path, filename
+    unless fs.existsSync file_path
+      msg.send "Error: Not Found #{file_path}"
+      return
+
+    msg.send "Loading env -filename=#{filename}, -dry-run=#{dry_run}..."
 
     if dry_run
       showDetailBeforeApply msg, file_path
