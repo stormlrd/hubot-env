@@ -68,15 +68,9 @@ showDetailBeforeApply = (msg, file_path) ->
 
 module.exports = (robot) ->
   robot.respond /env load(.*)$/i, (msg) ->
-    #msg.send "test: " + /-filename=(.*)/.exec(msg.match[1])
-    #weo = if msg.match[1].match(/-filename/) then true else false
-    #msg.send "weo: "+ weo
     arg_params = getArgParams(msg.match[1])
-    #msg.send "Args: " + msg.match[1]
     dry_run    = arg_params.dry_run
-    #msg.send "dry_run is: " + dry_run
     filename   = arg_params.filename
-    #msg.send "Filename is: " + filename
     unless filename
       msg.send "Error: Empty filename is invalid"
       return
@@ -103,8 +97,8 @@ module.exports = (robot) ->
     saveInBrain robot, prev_process_env
   
   robot.hear /switch region (.*)/i, (msg) ->
-    msg.send "Switching Region Master..."
     region = msg.match[1]
+    msg.send "Switching Region to " + region + " Master..."
     dry_run    = false
     filename   = region + ".env"
     unless filename
@@ -128,15 +122,16 @@ module.exports = (robot) ->
 
     env file_path, {overwrite: true}
 
-    showLoadedEnv msg, prev_process_env
+    #showLoadedEnv msg, prev_process_env
 
     saveInBrain robot, prev_process_env
+    msg.send "Region switch completed. It has been a pleasure to serve you master. Have a great day!"
 
   robot.hear /switch account (.*)/i, (msg) ->
-    msg.send "Switching Region Master..."
-    region = msg.match[1]
+    account = msg.match[1]
+    msg.send "Switching Account to " + account + " Master..."
     dry_run    = false
-    filename   = region + ".env"
+    filename   = account + ".env"
     unless filename
       msg.send "Error: Empty filename is invalid"
       return
@@ -158,6 +153,7 @@ module.exports = (robot) ->
 
     env file_path, {overwrite: true}
 
-    showLoadedEnv msg, prev_process_env
+    #showLoadedEnv msg, prev_process_env
 
     saveInBrain robot, prev_process_env
+    msg.send "Account switch completed. It has been a pleasure to serve you master. Have a great day!"
